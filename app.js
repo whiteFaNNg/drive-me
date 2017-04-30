@@ -8,6 +8,10 @@ var bodyParser = require('body-parser');
 var index = require('./routes/index');
 var users = require('./routes/users');
 
+//var pool = require('./database/postgres');
+//db schema init
+require('./database/db-setup')();
+
 var app = express();
 
 // view engine setup
