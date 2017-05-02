@@ -8,4 +8,4 @@ function generateToken(id,type){
     return jwt.sign({id: id, access: type}, secret.key).toString();
 }
 
-module.exports = generateToken;
+module.exports = {generateToken};

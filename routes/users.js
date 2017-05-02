@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const secret = require('../config/jwt.json');
 const authenticate = require('../middleware/authenticate');
-const generateToken = require('../functions/functions');
+const generateToken = require('../functions/functions').generateToken;
 
 
 router.get('/', function(req, res, next) {
