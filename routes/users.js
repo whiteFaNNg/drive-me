@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../database/postgres');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const secret = require('../config/jwt.json');
+// const jwt = require('jsonwebtoken');
+// const secret = require('../config/jwt.json');
 const authenticate = require('../middleware/authenticate');
 const generateToken = require('../functions/functions').generateToken;
 
@@ -19,7 +19,7 @@ router.post('/register', function(req, res, next) {
     let age = req.body.age;
     let password = req.body.password;
     if(email !== null){
-        pool.query('SELECT name from users where email = $1', [email])
+        pool.query('SELECT email from users where email = $1', [email])
             .then(data => {
                 if(data.rowCount===0){
                     let salt = bcrypt.genSaltSync(10);
@@ -38,7 +38,7 @@ router.post('/register', function(req, res, next) {
                 }
             });
     }else{
-        res.end("Some error");
+        res.send({message:'Invalid email'});
     }
 });
 
@@ -60,20 +60,25 @@ router.post('/login', function(req, res, next) {
                                res.send({error:err})
                            })
                    }else{
-                       res.send({message:"password was incorrect"});
+                       res.send({message:'Password was incorrect'});
                    }
                }
             },err=>{
                 console.log(err);
-                res.send("Error");
+                res.send("Error: "+err);
             });
     }else{
-        res.send('No email provided');
+        res.send({message:'Invalid email'});
     }
 });
 
 router.get('/me',authenticate, function(req,res,next){
     res.send(req.user);
+});
+
+router.post('/test', (req,res)=>{
+   let test = req.body.test || "kek";
+   res.send({test})
 });
 
 module.exports = router;

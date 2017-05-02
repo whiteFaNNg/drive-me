@@ -7,6 +7,7 @@ var bodyParser = require('body-parser');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
+var drivers = require('./routes/drivers');
 
 //var pool = require('./database/postgres');
 //db schema init
@@ -28,6 +29,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
 app.use('/users', users);
+app.use('/drivers', drivers);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
