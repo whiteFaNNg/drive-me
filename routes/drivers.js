@@ -89,4 +89,8 @@ router.get('/me',authenticate, getDriverData, (req,res)=>{
     res.send(req.user);
 });
 
+router.post('/trip',authenticate,getDriverData, (req, res)=>{
+
+});
+
 module.exports = router;

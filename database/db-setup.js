@@ -2,6 +2,7 @@
  * Created by Kliment on 4/29/2017.
  */
 const pool = require('./postgres');
+const {initMapData} = require('../functions/map-data');
 
 let initSchema = ()=>{
     initUsers();
@@ -63,6 +64,8 @@ let initConnections = ()=>{
                 .then(data=>{
                     if(parseInt(data.rows[0].count)===0){
                         addConnections();
+                    }else{
+                        initMapData();
                     }
                 },err=>{
                     console.log(err);
@@ -148,6 +151,7 @@ let addConnections = ()=>{
         '(17,18,55,65), (16,17,55,57), (15,16,32,35)')
         .then(data=>{
             console.log('connections added');
+            initMapData();
         },err=>{
             console.log('error while adding connections\n'+err);
         })
