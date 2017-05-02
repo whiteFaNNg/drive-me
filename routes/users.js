@@ -5,14 +5,15 @@ const bcrypt = require('bcryptjs');
 // const jwt = require('jsonwebtoken');
 // const secret = require('../config/jwt.json');
 const authenticate = require('../middleware/authenticate');
+const getUserData = require('../middleware/user-info');
 const generateToken = require('../functions/functions').generateToken;
 
 
-router.get('/', function(req, res, next) {
+router.get('/', (req, res, next)=> {
     res.send('respond with a resource');
 });
 
-router.post('/register', function(req, res, next) {
+router.post('/register', (req, res, next)=> {
     let email = req.body.email;
     let name = req.body.name;
     let surname = req.body.surname;
@@ -42,7 +43,7 @@ router.post('/register', function(req, res, next) {
     }
 });
 
-router.post('/login', function(req, res, next) {
+router.post('/login', (req, res, next)=> {
     let email = req.body.email;
     let password = req.body.password;
     if(email !== null){
@@ -72,7 +73,7 @@ router.post('/login', function(req, res, next) {
     }
 });
 
-router.get('/me',authenticate, function(req,res,next){
+router.get('/me',authenticate, getUserData, (req,res,next)=>{
     res.send(req.user);
 });
 

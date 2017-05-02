@@ -8,13 +8,14 @@ const bcrypt = require('bcryptjs');
 // const jwt = require('jsonwebtoken');
 // const secret = require('../config/jwt.json');
 const authenticate = require('../middleware/authenticate');
+const getDriverData = require('../middleware/driver-info');
 const generateToken = require('../functions/functions').generateToken;
 
-router.get('/', function(req, res, next) {
+router.get('/', (req, res, next)=> {
     res.send('respond with a resource');
 });
 
-router.post('/register', function(req, res) {
+router.post('/register', (req, res) =>{
     let email = req.body.email;
     let name = req.body.name;
     let surname = req.body.surname;
@@ -53,7 +54,7 @@ router.post('/register', function(req, res) {
     }
 });
 
-router.post('/login', function(req, res) {
+router.post('/login', (req, res)=> {
     let email = req.body.email;
     let password = req.body.password;
     if(email !== null){
@@ -64,7 +65,7 @@ router.post('/login', function(req, res) {
                 } else{
                     if(bcrypt.compareSync(password, data.rows[0].password)){
                         let token = generateToken(data.rows[0].id, "access");
-                        pool.query('update users set token = $1 where email = $2',[token,email])
+                        pool.query('update drivers set token = $1 where email = $2',[token,email])
                             .then(data=>{
                                 res.send({message:"successful login",token:token});
                             },err=>{
@@ -83,8 +84,8 @@ router.post('/login', function(req, res) {
     }
 });
 
-// router.get('/me',authenticate, function(req,res){
-//     res.send(req.user);
-// });
+router.get('/me',authenticate, getDriverData, (req,res)=>{
+    res.send(req.user);
+});
 
 module.exports = router;
