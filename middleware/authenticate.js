@@ -15,22 +15,9 @@ let authenticate = (req, res, next) => {
         req.user.id = decoded.id;
         next();
     } catch (err) {
-        console.log(err);
+        console.error(err);
         res.status(401).send();
-        // return;
     }
-    // pool.query('select id, name, surname, email, token, age from users where id = $1 and token = $2',[decoded.id,token])
-    //     .then(data=>{
-    //         if(data.rowCount!==1){
-    //             res.status(401).send();
-    //         }else{
-    //             req.user = data.rows[0];
-    //             req.token = token;
-    //             next();
-    //         }
-    //     },err=>{
-    //         res.status(401).send();
-    //     });
 };
 
 module.exports = authenticate;
