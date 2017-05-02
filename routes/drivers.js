@@ -5,13 +5,11 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../database/postgres');
 const bcrypt = require('bcryptjs');
-// const jwt = require('jsonwebtoken');
-// const secret = require('../config/jwt.json');
 const authenticate = require('../middleware/authenticate');
 const getDriverData = require('../middleware/driver-info');
 const generateToken = require('../functions/functions').generateToken;
 
-router.get('/', (req, res, next)=> {
+router.get('/', (req, res)=> {
     res.send('respond with a resource');
 });
 
@@ -39,18 +37,20 @@ router.post('/register', (req, res) =>{
                         'VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)',
                         [name,surname,email,password,age,shortInfo,phoneNumber,driverLicense,vehicleType,vehicleYear,vehicleGas,vehicleSeats])
                         .then(data=>{
-                            console.log(data);
-                            console.log(data.rows[0]);
-                            res.send({status:"driver profile was created", token: "test"});
+                            res.send({message:'driver created'});
                         },err=>{
-                            res.send({message: 'cannot create profile: '+err});
+                            console.error(err);
+                            res.status(500).end();
                         })
                 }else{
                     res.send({message:"Email is already in use"});
                 }
+            },err=>{
+                console.error(err);
+                res.status(500).end();
             });
     }else{
-        res.end("Some error");
+        res.send({message:'invalid email'});
     }
 });
 
@@ -58,29 +58,30 @@ router.post('/login', (req, res)=> {
     let email = req.body.email;
     let password = req.body.password;
     if(email !== null){
-        pool.query('SELECT * from drivers where email = $1', [email])
+        pool.query('SELECT * FROM drivers WHERE email = $1', [email])
             .then(data=>{
                 if(data.rowCount !== 1){
-                    res.send({message:'That email was not found'});
+                    res.send({message:'email not found'});
                 } else{
                     if(bcrypt.compareSync(password, data.rows[0].password)){
                         let token = generateToken(data.rows[0].id, "access");
-                        pool.query('update drivers set token = $1 where email = $2',[token,email])
+                        pool.query('UPDATE drivers SET token = $1 WHERE email = $2',[token,email])
                             .then(data=>{
                                 res.send({message:"successful login",token:token});
                             },err=>{
-                                res.send({error:err})
+                                console.error(err);
+                                res.status(500).end();
                             })
                     }else{
-                        res.send({message:"password was incorrect"});
+                        res.send({message:'incorrect password'});
                     }
                 }
             },err=>{
-                console.log(err);
-                res.send({message:'Error'});
+                console.error(err);
+                res.status(500).end();
             });
     }else{
-        res.send('No email provided');
+        res.send({message:'invalid email'});
     }
 });
 
