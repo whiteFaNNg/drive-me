@@ -5,11 +5,22 @@ const pool = require('../database/postgres');
 
 let cities = [];
 let connections = [];
+let connMap = new Map();
+
+let initConnMap = ()=>{
+    for(let i = 0;i<cities.length;i++){
+        connMap.set(cities[i],new Map());
+    }
+    // city -> city -> [distance,time]
+    for(let i = 0;i<connections.length;i++){
+        connMap.get(cities[connections[i][0]]).set(cities[connections[i][1]],[connections[i][2],connections[i][3]]);
+        connMap.get(cities[connections[i][1]]).set(cities[connections[i][0]],[connections[i][2],connections[i][3]]);
+    }
+};
 
 let initMapData = ()=>{
     pool.query('SELECT name FROM cities')
         .then(data=>{
-            // console.log(data.rows);
             for(let i = 0;i<data.rows.length;i++){
                 cities.push(data.rows[i].name);
             }
@@ -19,7 +30,7 @@ let initMapData = ()=>{
                         let temp = data.rows[i];
                         connections.push([--temp.first,--temp.second,temp.distance,temp.time]);
                     }
-                    console.log(connections.length);
+                    initConnMap();
                 },err=> {
                     console.log(err)
                 })
@@ -28,4 +39,4 @@ let initMapData = ()=>{
         });
 };
 
-module.exports = {cities, connections, initMapData};
+module.exports = {cities, connections, connMap, initMapData};
