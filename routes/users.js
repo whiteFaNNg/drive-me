@@ -4,7 +4,7 @@ const pool = require('../database/postgres');
 const bcrypt = require('bcryptjs');
 const authenticate = require('../middleware/authenticate');
 const getUserData = require('../middleware/user-info');
-const generateToken = require('../functions/functions').generateToken;
+const {generateToken,refineSearch} = require('../functions/functions');
 
 
 router.get('/', (req, res, next)=> {
@@ -91,17 +91,27 @@ router.post('/find',authenticate,getUserData, (req,res)=>{
         chatty: req.query.chatty||false
    };
    let matchLocationQuery = "%"+destination.from+"%"+destination.to+"%";
+   let refinedSearch = {primary:[],secondary:[]};
    //res.send(preferences);
     pool.query("SELECT trips.id, trips.route, trips.start_time, trips.end_time, drivers.name, drivers.surname, "+
-        "CAST(drivers.total_rating AS real)/drivers.total_votes AS rating "+
+        "CAST(drivers.total_rating AS real)/drivers.total_votes AS rating, drivers.vehicle_gas, drivers.vehicle_seats "+
         "FROM trips JOIN drivers ON trips.driver_id = drivers.id "+
         "WHERE trips.start_time <= $1 AND trips.end_time > $1 AND trips.route LIKE $2 AND drivers.pets = $3 AND "+
         "drivers.music = $4 and drivers.smoking = $5 and drivers.chatty = $6 "+
         "ORDER BY rating DESC",
         [startTimeRange.from,matchLocationQuery,preferences.pets,preferences.music,preferences.smoking,preferences.chatty])
         .then(data=>{
-            console.log(data.rows[0]);
-            res.send({message:"success"});
+            console.log(data);
+            if(parseInt(data.rowCount)>=1){
+                refineSearch(refinedSearch, data.rows,startTimeRange,priceRange,destination,refinedSearch)
+                    .then(data=>{
+                        res.send(data);
+                    }).catch(err=>{
+                        res.status(501).end();
+                });
+            }else{
+                res.send({message:"no match"});
+            }
         },err=>{
             console.error(err);
             res.code(500).end();

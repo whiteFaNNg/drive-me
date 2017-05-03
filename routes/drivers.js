@@ -7,7 +7,7 @@ const pool = require('../database/postgres');
 const bcrypt = require('bcryptjs');
 const authenticate = require('../middleware/authenticate');
 const getDriverData = require('../middleware/driver-info');
-const {generateToken,calculateRouteTime} = require('../functions/functions');
+const {generateToken,calculateRoute} = require('../functions/functions');
 
 router.get('/', (req, res)=> {
     res.send('respond with a resource');
@@ -93,7 +93,7 @@ router.post('/trip',authenticate,getDriverData, (req, res)=>{
     let id = req.user.id;
     let tripRoute = req.body.route;
     let startTime = parseInt(req.body.startTime);
-    let endTime = startTime + calculateRouteTime(tripRoute);
+    let endTime = startTime + calculateRoute(tripRoute,1);
     //todo: check for validity of input
     pool.query('INSERT INTO trips (route,driver_id,start_time,end_time) VALUES ($1,$2,$3,$4)',[tripRoute,id,startTime,endTime])
         .then(data=>{
