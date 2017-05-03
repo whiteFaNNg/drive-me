@@ -101,14 +101,14 @@ router.post('/find',authenticate,getUserData, (req,res)=>{
         "ORDER BY rating DESC",
         [startTimeRange.from,matchLocationQuery,preferences.pets,preferences.music,preferences.smoking,preferences.chatty])
         .then(data=>{
-            console.log(data);
+            // console.log(data);
             if(parseInt(data.rowCount)>=1){
                 refineSearch(refinedSearch, data.rows,startTimeRange,priceRange,destination,refinedSearch)
                     .then(data=>{
                         res.send(data);
-                    }).catch(err=>{
+                    },err=>{
                         res.status(501).end();
-                });
+                    });
             }else{
                 res.send({message:"no match"});
             }

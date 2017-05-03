@@ -31,6 +31,7 @@ let verifyRoute = (trip_route)=>{
 
 let getStartTime = (locations, startTime, endIndex)=>{
     let temp = 0;
+    //console.log("Start time -> "+startTime+", endIndex -> "+endIndex);
     for(let i = 0; i<endIndex; i++){
         temp+=connMap.get(locations[i]).get(locations[i+1])[0];
     }
@@ -50,8 +51,9 @@ let constructRefinedSearch = (row, refinedSearch, locations, startTimeRange, pri
             }
         }
         if(!isTaken){
-            let startingTime = getStartTime(locations,row.startTime,subRoutes.begin);
-            let obj = Object.assign({id:row.id, at:startingTime, price: gasConsumption/100*subRoutes[i].distance}, subRoutes[i]);
+            // console.log(row);
+            let startingTime = getStartTime(locations,row.start_time,subRoutes[i].begin);
+            let obj = Object.assign({id:row.id, at:startingTime, price: gasConsumption/100*subRoutes[i].distance*90}, subRoutes[i]);
             if((obj.price>priceRange.from) && (obj.price<priceRange.to) && (obj.at>startTimeRange.from) && (obj.at<startTimeRange.to)){
                 refinedSearch.primary.push(obj);
             }else{
@@ -115,6 +117,7 @@ let refineSearch = (refinedSearch,rows,startTimeRange,priceRange,destination)=>{
                 currTime+=100;
                 if(currTime>=maxTime || foundError){
                     clearInterval(myInterval);
+                    console.log("RESOLVED ROWS -> "+resolvedRows);
                     reject("taking too much time or error");
                 }
             }
@@ -139,7 +142,7 @@ let refineSearch = (refinedSearch,rows,startTimeRange,priceRange,destination)=>{
                     constructRefinedSearch(rows[i], refinedSearch, locations, startTimeRange, priceRange, destination,availableSeats);
                     resolvedRows++
                 },err=>{
-                    console.err(err);
+                    console.error(err);
                     foundError = true;
                 })
         }
