@@ -9,7 +9,7 @@ let initSchema = ()=>{
     initCities();
     initConnections();
     initDrivers();
-    initPreferences();
+//    initPreferences();
     initTrips();
     initTickets();
 };
@@ -71,7 +71,7 @@ let initConnections = ()=>{
                     console.log(err);
                 })
         },err=>{
-            console.log('error while creating table >conncections<\n'+err);
+            console.log('error while creating table >connections<\n'+err);
         });
 };
 
@@ -91,6 +91,10 @@ let initDrivers = ()=>{
         'vehicle_seats int not null, '+
         'vehicle_year int not null, '+
         'vehicle_gas real not null, '+
+        'pets boolean not null default false, '+
+        'smoking boolean not null default false, '+
+        'music boolean not null default false, '+
+        'chatty boolean not null default false, '+
         'total_km int not null default 0, '+
         'total_passengers int not null default 0, '+
         'total_rating int not null default 0, '+
@@ -102,6 +106,7 @@ let initDrivers = ()=>{
         });
 };
 
+//unused
 let initPreferences = ()=>{
     pool.query('CREATE TABLE IF NOT EXISTS preferences ('+
         'id serial primary key not null, '+
@@ -176,6 +181,8 @@ let initTickets = ()=>{
         'id serial primary key not null, '+
         'start_location varchar not null, '+
         'end_location varchar not null, '+
+        'start_position int not null, '+
+        'end_position int not null, '+
         'start_time int not null, '+
         'trip_id int not null)')
         .then(data=>{

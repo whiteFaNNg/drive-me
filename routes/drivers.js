@@ -102,7 +102,7 @@ router.post('/trip',authenticate,getDriverData, (req, res)=>{
         },err=>{
             console.error(err);
             res.status(500).end();
-        })
+        });
 });
 
 module.exports = router;

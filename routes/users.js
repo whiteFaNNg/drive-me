@@ -80,4 +80,32 @@ router.get('/me',authenticate, getUserData, (req,res)=>{
     res.send(req.user);
 });
 
+router.post('/find',authenticate,getUserData, (req,res)=>{
+   let startTimeRange = req.body.startTimeRange;
+   let priceRange = req.body.priceRange;
+   let destination = req.body.destination;
+   let preferences = {
+        pets : req.query.pets||false,
+        smoking: req.query.smoking||false,
+        music: req.query.music||false,
+        chatty: req.query.chatty||false
+   };
+   let matchLocationQuery = "%"+destination.from+"%"+destination.to+"%";
+   //res.send(preferences);
+    pool.query("SELECT trips.id, trips.route, trips.start_time, trips.end_time, drivers.name, drivers.surname, "+
+        "CAST(drivers.total_rating AS real)/drivers.total_votes AS rating "+
+        "FROM trips JOIN drivers ON trips.driver_id = drivers.id "+
+        "WHERE trips.start_time <= $1 AND trips.end_time > $1 AND trips.route LIKE $2 AND drivers.pets = $3 AND "+
+        "drivers.music = $4 and drivers.smoking = $5 and drivers.chatty = $6 "+
+        "ORDER BY rating DESC",
+        [startTimeRange.from,matchLocationQuery,preferences.pets,preferences.music,preferences.smoking,preferences.chatty])
+        .then(data=>{
+            console.log(data.rows[0]);
+            res.send({message:"success"});
+        },err=>{
+            console.error(err);
+            res.code(500).end();
+        });
+});
+
 module.exports = router;
