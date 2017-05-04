@@ -171,7 +171,7 @@ router.post('/ticket', authenticate, getUserData, (req,res)=>{
                                     if(parseInt(data3.rowCount) === 1){
                                         res.send({message:"ticket reserved"});
                                     }else{
-                                        res.send({message:"cannot reserve ticket"});
+                                        res.send({message:"could not reserve ticket"});
                                     }
                                 },err=>{
                                     console.error(err);
@@ -189,6 +189,33 @@ router.post('/ticket', authenticate, getUserData, (req,res)=>{
             console.error(err);
             res.status(500).end();
     });
+});
+
+router.get('/ticket',authenticate, getUserData, (req,res)=>{
+   pool.query('SELECT * FROM tickets WHERE user_id = $1',[req.user.id])
+       .then(data=>{
+           let ticketsObj = {};
+           ticketsObj.count = data.rowCount;
+           ticketsObj.tickets = data.rows;
+           res.send(ticketsObj);
+       },err=>{
+           res.status(500).end();
+       })
+});
+
+router.delete('/ticket/:id',authenticate,getUserData, (req,res)=>{
+    let ticketId = req.params.id;
+    pool.query('DELETE from tickets WHERE id = $1 and user_id = $2', [ticketId, req.user.id])
+        .then(data=>{
+            if(parseInt(data.rowCount)===1){
+                res.send({message:"ticket deleted"});
+            }else{
+                res.send({message:"could not delete ticket"});
+            }
+        },err=>{
+            console.error(err);
+            res.status(500).end();
+        })
 });
 
 module.exports = router;
