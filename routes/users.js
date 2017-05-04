@@ -4,7 +4,7 @@ const pool = require('../database/postgres');
 const bcrypt = require('bcryptjs');
 const authenticate = require('../middleware/authenticate');
 const getUserData = require('../middleware/user-info');
-const {generateToken,refineSearch,getStartTime} = require('../functions/functions');
+const {generateToken,refineSearch,getStartTime,calculateRoute} = require('../functions/functions');
 
 
 router.get('/', (req, res, next)=> {
@@ -216,6 +216,50 @@ router.delete('/ticket/:id',authenticate,getUserData, (req,res)=>{
             console.error(err);
             res.status(500).end();
         })
+});
+
+router.get('/ticket/:id',authenticate,getUserData,(req,res)=>{
+    let ticketId = req.params.id;
+    pool.query('SELECT tickets.id, tickets.start_location, tickets.end_location, tickets.start_position, tickets.end_position, '+
+        'drivers.name, drivers.surname, drivers.email, drivers.phone_number, drivers.vehicle_gas, drivers.vehicle_seats, trips.route, '+
+        'CAST(drivers.total_rating AS real)/drivers.total_votes AS rating '+
+        'FROM tickets JOIN trips ON tickets.trip_id=trips.id JOIN drivers ON trips.driver_id=drivers.id '+
+        'WHERE trips.id=$1',[ticketId])
+        .then(data=>{
+            // res.send(data);
+            if(parseInt(data.rowCount)!==1){
+                res.send({message:"could not find that ticket"});
+            }else{
+                let locations = data.rows[0].route.split('-');
+                let distance = calculateRoute(locations,data.rows[0].start_position,data.rows[0].end_position,0);
+                let time = calculateRoute(locations,data.rows[0].start_position,data.rows[0].end_position,1);
+                let price = data.rows[0].vehicle_gas/100*distance*90;
+                let ticketObj = {};
+                ticketObj.ticket = {
+                    id:ticketId,
+                    user_id:req.user.id,
+                    from: data.rows[0].start_location,
+                    to: data.rows[0].end_location,
+                    distance: distance,
+                    time: time,
+                    price: price
+                };
+                ticketObj.driver = {
+                    name:data.rows[0].name,
+                    surname:data.rows[0].surname,
+                    email:data.rows[0].email,
+                    phone:data.rows[0].phone_number,
+                    rating: data.rows[0].rating
+                };
+                ticketObj.other = {
+                    seats: data.rows[0].vehicle_seats
+                };
+                res.send(ticketObj);
+            }
+        },err=>{
+            console.error(err);
+            res.status(500).end();
+        });
 });
 
 module.exports = router;

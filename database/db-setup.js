@@ -190,7 +190,7 @@ let initTickets = ()=>{
             console.log('table >tickets< created');
         },err=>{
             console.log('error while creating table >tickets<\n'+err);
-        })
+        });
 };
 
 module.exports = initSchema;

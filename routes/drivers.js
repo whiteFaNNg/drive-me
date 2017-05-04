@@ -92,8 +92,10 @@ router.get('/me',authenticate, getDriverData, (req,res)=>{
 router.post('/trip',authenticate,getDriverData, (req, res)=>{
     let id = req.user.id;
     let tripRoute = req.body.route;
+    let locations = tripRoute.split('-');
     let startTime = parseInt(req.body.startTime);
-    let endTime = startTime + calculateRoute(tripRoute,1);
+    // let endTime = startTime + calculateRoute(tripRoute,1);
+    let endTime = startTime + calculateRoute(locations,0,locations.length-1,1);
     //todo: check for validity of input
     pool.query('INSERT INTO trips (route,driver_id,start_time,end_time) VALUES ($1,$2,$3,$4)',[tripRoute,id,startTime,endTime])
         .then(data=>{

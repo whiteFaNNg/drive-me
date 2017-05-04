@@ -93,14 +93,22 @@ let getSubroutes = (locations,destination)=> {
 };
 
 //option -> 0 for distance, 1 for time
-let calculateRoute = (trip_route, option)=>{
-    let locations = trip_route.split('-');
+let calculateRoute = (locations,startIndex,endIndex,option)=>{
     let total = 0;
-    for(let i = 0;i<locations.length-1;i++){
-        total += connMap.get(locations[i]).get(locations[i+1])[1];
+    for(let i = startIndex;i<endIndex;i++){
+        total += connMap.get(locations[i]).get(locations[i+1])[option];
     }
     return total;
 };
+// obsolete
+// let calculateRoute = (trip_route, option)=>{
+//     let locations = trip_route.split('-');
+//     let total = 0;
+//     for(let i = 0;i<locations.length-1;i++){
+//         total += connMap.get(locations[i]).get(locations[i+1])[1];
+//     }
+//     return total;
+// };
 
 let refineSearch = (refinedSearch,rows,startTimeRange,priceRange,destination)=>{
     let currTime = 0;
