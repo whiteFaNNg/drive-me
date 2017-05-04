@@ -4,7 +4,7 @@ const pool = require('../database/postgres');
 const bcrypt = require('bcryptjs');
 const authenticate = require('../middleware/authenticate');
 const getUserData = require('../middleware/user-info');
-const {generateToken,refineSearch,getStartTime,calculateRoute} = require('../functions/functions');
+const {generateToken,refineSearch,getStartTime,calculateRoute,calculatePrice} = require('../functions/functions');
 
 
 router.get('/', (req, res, next)=> {
@@ -258,7 +258,8 @@ router.get('/ticket/:id',authenticate,getUserData,(req,res)=>{
                 let locations = data.rows[0].route.split('-');
                 let distance = calculateRoute(locations,data.rows[0].start_position,data.rows[0].end_position,0);
                 let time = calculateRoute(locations,data.rows[0].start_position,data.rows[0].end_position,1);
-                let price = data.rows[0].vehicle_gas/100*distance*90;
+                //let price = data.rows[0].vehicle_gas/100*distance*90;
+                let price = calculatePrice(data.rows[0].start_position,data.rows[0].end_position,distance,data.rows[0].vehicle_gas,locations);
                 let ticketObj = {};
                 ticketObj.ticket = {
                     id:ticketId,

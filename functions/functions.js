@@ -150,4 +150,14 @@ let refineSearch = (refinedSearch,rows,startTimeRange,priceRange,destination)=>{
     });
 };
 
-module.exports = {generateToken,verifyRoute,calculateRoute,refineSearch,getStartTime};
+let calculatePrice = (ticketStart,ticketEnd,ticketDistance,gas,locations)=>{
+    let basePrice = gas/100*ticketDistance*90;
+    if((parseInt(ticketStart)!==0) || (parseInt(ticketEnd)!==(locations.length-1))){
+        let totalDistance = calculatePrice(locations,0,locations.length-1,0);
+        return basePrice * Math.log(Math.E + (1-ticketDistance/totalDistance)*5);
+    }else{
+        return basePrice;
+    }
+};
+
+module.exports = {generateToken,verifyRoute,calculateRoute,calculatePrice,refineSearch,getStartTime};
