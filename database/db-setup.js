@@ -184,7 +184,8 @@ let initTickets = ()=>{
         'start_position int not null, '+
         'end_position int not null, '+
         'start_time int not null, '+
-        'trip_id int not null)')
+        'trip_id int not null, '+
+        'user_id int not null)')
         .then(data=>{
             console.log('table >tickets< created');
         },err=>{

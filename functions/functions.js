@@ -31,7 +31,7 @@ let verifyRoute = (trip_route)=>{
 
 let getStartTime = (locations, startTime, endIndex)=>{
     let temp = 0;
-    //console.log("Start time -> "+startTime+", endIndex -> "+endIndex);
+    // console.log("Start time -> "+startTime+", endIndex -> "+endIndex);
     for(let i = 0; i<endIndex; i++){
         temp+=connMap.get(locations[i]).get(locations[i+1])[0];
     }
@@ -111,17 +111,19 @@ let refineSearch = (refinedSearch,rows,startTimeRange,priceRange,destination)=>{
     return new Promise((resolve,reject)=>{
         let myInterval = setInterval(()=>{
             if(resolvedRows===rowsLength){
+                //takes around 1-5 ms locally
                 clearInterval(myInterval);
                 resolve(refinedSearch);
             }else{
-                currTime+=100;
+
+                currTime+=10;
                 if(currTime>=maxTime || foundError){
                     clearInterval(myInterval);
                     console.log("RESOLVED ROWS -> "+resolvedRows);
                     reject("taking too much time or error");
                 }
             }
-        },100);
+        },10);
         for(let i = 0; i<rowsLength; i++){
             let locations = rows[i].route.split('-');
             let availableSeats = [];
@@ -144,9 +146,9 @@ let refineSearch = (refinedSearch,rows,startTimeRange,priceRange,destination)=>{
                 },err=>{
                     console.error(err);
                     foundError = true;
-                })
+                });
         }
     });
 };
 
-module.exports = {generateToken,verifyRoute,calculateRoute,refineSearch};
+module.exports = {generateToken,verifyRoute,calculateRoute,refineSearch,getStartTime};
