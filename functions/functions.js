@@ -100,15 +100,6 @@ let calculateRoute = (locations,startIndex,endIndex,option)=>{
     }
     return total;
 };
-// obsolete
-// let calculateRoute = (trip_route, option)=>{
-//     let locations = trip_route.split('-');
-//     let total = 0;
-//     for(let i = 0;i<locations.length-1;i++){
-//         total += connMap.get(locations[i]).get(locations[i+1])[1];
-//     }
-//     return total;
-// };
 
 let refineSearch = (refinedSearch,rows,startTimeRange,priceRange,destination)=>{
     let currTime = 0;

@@ -205,17 +205,42 @@ router.get('/ticket',authenticate, getUserData, (req,res)=>{
 
 router.delete('/ticket/:id',authenticate,getUserData, (req,res)=>{
     let ticketId = req.params.id;
-    pool.query('DELETE from tickets WHERE id = $1 and user_id = $2', [ticketId, req.user.id])
+    pool.query('SELECT start_time, end_location FROM tickets WHERE id = $1 and user_id = $2',[ticketId, req.user.id])
         .then(data=>{
             if(parseInt(data.rowCount)===1){
-                res.send({message:"ticket deleted"});
+                //res.send({message:"ticket deleted"});
+                if(new Date().getTime()/60000>data.rows[0].start_time){
+                    pool.query('DELETE FROM tickets WHERE id = $1 and user_id = $2', [ticketId, req.user.id])
+                        .then(data2=>{
+                            if(parseInt(data2.rowCount)===1){
+                                pool.query('UPDATE cities SET popularity = popularity - 1 WHERE name = $1',[data.rows[0].end_location])
+                                    .then(data3=>{
+                                        if(parseInt(data3.rowCount)===1){
+                                            res.send({message:"ticket deleted"});
+                                        }else{
+                                            res.send({message:"destination error prevented ticket deletion"});
+                                        }
+                                    },err=>{
+                                        console.error(err);
+                                        res.status(500).end();
+                                    })
+                            }else{
+                                res.send({message:"could not delete ticket"});
+                            }
+                        },err=>{
+                            console.error(err);
+                            res.status(500).end();
+                        });
+                }else{
+                    res.send({message:"cannot delete ticket after start time"});
+                }
             }else{
                 res.send({message:"could not delete ticket"});
             }
         },err=>{
             console.error(err);
             res.status(500).end();
-        })
+        });
 });
 
 router.get('/ticket/:id',authenticate,getUserData,(req,res)=>{

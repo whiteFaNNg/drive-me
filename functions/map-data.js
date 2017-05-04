@@ -19,7 +19,7 @@ let initConnMap = ()=>{
 };
 
 let initMapData = ()=>{
-    pool.query('SELECT name FROM cities')
+    pool.query('SELECT name FROM cities ORDER BY id')
         .then(data=>{
             for(let i = 0;i<data.rows.length;i++){
                 cities.push(data.rows[i].name);
