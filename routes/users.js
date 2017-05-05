@@ -209,7 +209,7 @@ router.delete('/ticket/:id',authenticate,getUserData, (req,res)=>{
         .then(data=>{
             if(parseInt(data.rowCount)===1){
                 //res.send({message:"ticket deleted"});
-                if(new Date().getTime()/60000>data.rows[0].start_time){
+                if(new Date().getTime()/60000<data.rows[0].start_time){
                     pool.query('DELETE FROM tickets WHERE id = $1 and user_id = $2', [ticketId, req.user.id])
                         .then(data2=>{
                             if(parseInt(data2.rowCount)===1){
@@ -249,7 +249,7 @@ router.get('/ticket/:id',authenticate,getUserData,(req,res)=>{
         'drivers.name, drivers.surname, drivers.email, drivers.phone_number, drivers.vehicle_gas, drivers.vehicle_seats, trips.route, '+
         'CAST(drivers.total_rating AS real)/drivers.total_votes AS rating '+
         'FROM tickets JOIN trips ON tickets.trip_id=trips.id JOIN drivers ON trips.driver_id=drivers.id '+
-        'WHERE trips.id=$1',[ticketId])
+        'WHERE tickets.id=$1',[ticketId])
         .then(data=>{
             // res.send(data);
             if(parseInt(data.rowCount)!==1){
@@ -258,7 +258,8 @@ router.get('/ticket/:id',authenticate,getUserData,(req,res)=>{
                 let locations = data.rows[0].route.split('-');
                 let distance = calculateRoute(locations,data.rows[0].start_position,data.rows[0].end_position,0);
                 let time = calculateRoute(locations,data.rows[0].start_position,data.rows[0].end_position,1);
-                //let price = data.rows[0].vehicle_gas/100*distance*90;
+                // let price = data.rows[0].vehicle_gas/100*distance*90;
+                //console.log(locations.length);
                 let price = calculatePrice(data.rows[0].start_position,data.rows[0].end_position,distance,data.rows[0].vehicle_gas,locations);
                 let ticketObj = {};
                 ticketObj.ticket = {
