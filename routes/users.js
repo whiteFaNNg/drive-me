@@ -5,19 +5,23 @@ const bcrypt = require('bcryptjs');
 const authenticate = require('../middleware/authenticate');
 const getUserData = require('../middleware/user-info');
 const {generateToken,refineSearch,getStartTime,calculateRoute,calculatePrice} = require('../functions/functions');
+const {validUserInput} = require('../functions/validators');
 
 
 router.get('/', (req, res, next)=> {
     res.send('respond with a resource');
 });
 
-router.post('/register', (req, res, next)=> {
-    let email = req.body.email;
-    let name = req.body.name;
-    let surname = req.body.surname;
-    let age = req.body.age;
-    let password = req.body.password;
-    if(email !== null){
+router.post('/register', (req, res)=> {
+    let userInput = {
+        email : req.body.email || "",
+        name : req.body.name || "",
+        surname : req.body.surname || "",
+        age : req.body.age || "",
+        password : req.body.password || ""
+    };
+
+    if(validUserInput(userInput)){
         pool.query('SELECT email FROM users WHERE email = $1', [email])
             .then(data => {
                 if(data.rowCount===0){
@@ -41,7 +45,7 @@ router.post('/register', (req, res, next)=> {
                 res.status(500).end();
             });
     }else{
-        res.send({message:'invalid email'});
+        res.send({message:'invalid input'});
     }
 });
 
@@ -288,5 +292,6 @@ router.get('/ticket/:id',authenticate,getUserData,(req,res)=>{
             res.status(500).end();
         });
 });
+
 
 module.exports = router;
