@@ -6,7 +6,7 @@ const secret = require('../config/jwt.json');
 const jwt = require('jsonwebtoken');
 
 let authenticate = (req, res, next) => {
-    let token = req.header('x-auth');
+    let token = req.header('x-auth')||"";
     let decoded;
     req.user = {};
     try {

@@ -3,20 +3,24 @@
  */
 const validator = require('validator');
 
+let getInt = (input)=>{
+    return validator.toInt(input);
+};
+
 let sanitize = (input)=>{
     return validator.escape(validator.trim(input));
 };
 
-let sanitizeUserInput = (userInput)=>{
-    Object.entries(userInput).forEach(
+let sanitizeInput = (objectData)=>{
+    Object.entries(objectData).forEach(
         ([key, value]) => {
-            userInput[key] = sanitize(value);
+            objectData[key] = sanitize(value);
         }
     );
 };
 
 let validUserInput = (userInput)=>{
-    sanitizeUserInput(userInput);
+    sanitizeInput(userInput);
     if(userInput.name === "" || userInput.surname ==="" || userInput.email ==="" || userInput.password === ""||userInput.age===""){
         return false;
     }
@@ -35,4 +39,23 @@ let validUserInput = (userInput)=>{
     return true;
 };
 
-module.exports = {validUserInput};
+let validTicketInput = (ticketInput)=>{
+    let isValid = true;
+    sanitizeInput(ticketInput);
+    Object.entries(ticketInput).forEach(
+        ([key, value]) => {
+            ticketInput[key] = validator.toInt(value);
+            if(isNaN(ticketInput[key])){
+                isValid=false;
+            }else if(ticketInput[key]<0){
+                isValid=false;
+            }
+        }
+    );
+    if(ticketInput.startIndex>=ticketInput.endIndex){
+        isValid = false;
+    }
+    return isValid;
+};
+
+module.exports = {validUserInput,validTicketInput,getInt};
