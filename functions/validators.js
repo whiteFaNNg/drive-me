@@ -93,4 +93,8 @@ let validSearchInput = (searchInput)=>{
     return true;
 };
 
-module.exports = {validUserInput,validTicketInput,validSearchInput, getInt,validateEmailAndPassword};
+let validRating = (rating)=>{
+    return !isNaN(rating) && rating>0 && rating<6;
+};
+
+module.exports = {validUserInput,validTicketInput,validSearchInput, getInt,validateEmailAndPassword,validRating};

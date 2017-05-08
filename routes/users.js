@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const authenticate = require('../middleware/authenticate');
 const getUserData = require('../middleware/user-info');
 const {generateToken,refineSearch,getStartTime,calculateRoute,calculatePrice} = require('../functions/functions');
-const {validUserInput,validTicketInput,validSearchInput,validateEmailAndPassword,getInt} = require('../functions/validators');
+const {validUserInput,validTicketInput,validSearchInput,validateEmailAndPassword,validRating,getInt} = require('../functions/validators');
 
 
 router.get('/', (req, res, next)=> {
@@ -361,6 +361,51 @@ router.get('/ticket/:id',authenticate,getUserData,(req,res)=>{
             },err=>{
                 console.error(err);
                 res.status(500).end();
+            });
+    }else{
+        res.send({message:"invalid input"});
+    }
+});
+
+router.post('/ticket/rate/:id', authenticate, getUserData, (req,res)=>{
+    let ticketId = getInt(req.params.id || "");
+    let rating = getInt(req.body.rating || "");
+    let currentTime = parseInt(new Date().getTime()/60000);
+    if(!isNaN(ticketId) && validRating(rating)){
+        pool.query('SELECT id, trip_id, start_time FROM tickets '+
+        'WHERE id = $1 AND user_id = $2 AND start_time < $3 AND rated = false', [ticketId,req.user.id,currentTime])
+            .then(data=>{
+                if(parseInt(data.rowCount)!==1){
+                    res.status(400).end();
+                }else{
+                    pool.query('UPDATE drivers SET total_votes = total_votes + 1, total_rating = total_rating + $1 '+
+                    'WHERE id = '+
+                    '(SELECT drivers.id FROM tickets join trips ON tickets.trip_id = trips.id JOIN drivers ON trips.driver_id = drivers.id)',
+                    [rating])
+                        .then(data2=>{
+                            if(parseInt(data2.rowCount)!==1){
+                                res.status(400).end();
+                            }else{
+                                pool.query('UPDATE tickets SET rated = true WHERE id = $1', [ticketId])
+                                    .then(data3=>{
+                                        if(parseInt(data3.rowCount)!== 1){
+                                            res.status(400).send({message:"there was some error, but your rating was submitted"});
+                                        }else{
+                                            res.send({message:"your rating was successfully submitted"});
+                                        }
+                                    },err=>{
+                                        console.error(err);
+                                        res.status(500).end();
+                                    })
+                            }
+                        },err=>{
+                            console.error(err);
+                            res.status(500).end();
+                        });
+                }
+            },err=>{
+               console.error(err);
+               res.status(500).end();
             });
     }else{
         res.send({message:"invalid input"});
