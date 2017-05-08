@@ -8,6 +8,7 @@ const bcrypt = require('bcryptjs');
 const authenticate = require('../middleware/authenticate');
 const getDriverData = require('../middleware/driver-info');
 const {generateToken,calculateRoute} = require('../functions/functions');
+const {validateEmailAndPassword} = require('../functions/validators');
 
 router.get('/', (req, res)=> {
     res.send('respond with a resource');
@@ -55,9 +56,9 @@ router.post('/register', (req, res) =>{
 });
 
 router.post('/login', (req, res)=> {
-    let email = req.body.email;
-    let password = req.body.password;
-    if(email !== null){
+    let email = req.body.email || "";
+    let password = req.body.password || "";
+    if(validateEmailAndPassword(email,password)){
         pool.query('SELECT * FROM drivers WHERE email = $1', [email])
             .then(data=>{
                 if(data.rowCount !== 1){
@@ -81,7 +82,7 @@ router.post('/login', (req, res)=> {
                 res.status(500).end();
             });
     }else{
-        res.send({message:'invalid email'});
+        res.send({message:'invalid input'});
     }
 });
 

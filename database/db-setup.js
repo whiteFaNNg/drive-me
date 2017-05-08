@@ -9,6 +9,7 @@ let initSchema = ()=>{
     initCities();
     initConnections();
     initDrivers();
+    initAgeHistory();
 //    initPreferences();
     initTrips();
     initTickets();
@@ -59,7 +60,7 @@ let initConnections = ()=>{
         'distance int not null, '+
         'time int not null)')
         .then(data=>{
-            console.log('Table >connections< created');
+            console.log('table >connections< created');
             pool.query('SELECT count(*) from connections')
                 .then(data=>{
                     if(parseInt(data.rows[0].count)===0){
@@ -103,6 +104,39 @@ let initDrivers = ()=>{
             console.log('table >drivers< created')
         },err=>{
             console.log('error while creating table >drivers<\n'+err);
+        });
+};
+
+let initAgeHistory = ()=>{
+    pool.query('CREATE TABLE IF NOT EXISTS age_history ('+
+        'id serial primary key not null, '+
+        'total int not null default 0)')
+        .then(data=>{
+            console.log('table >age_history< created');
+            pool.query('SELECT count(*) FROM age_history')
+                .then(data=>{
+                    if(parseInt(data.rows[0].count)===0){
+                        addInitialAgeHistory();
+                    }
+                },err=>{
+                    console.log(err);
+                });
+        },err=>{
+            console.log('error while creating table >age_history<\n'+err);
+        })
+};
+
+let addInitialAgeHistory = ()=>{
+    let qr = 'INSERT INTO age_history (total) VALUES ';
+    for(let i = 0;i<149;i++){
+        qr+='(0), '
+    }
+    qr+='(0)';
+    pool.query(qr)
+        .then(data=>{
+            //
+        },err=>{
+            console.error(err);
         });
 };
 

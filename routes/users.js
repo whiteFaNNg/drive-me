@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const authenticate = require('../middleware/authenticate');
 const getUserData = require('../middleware/user-info');
 const {generateToken,refineSearch,getStartTime,calculateRoute,calculatePrice} = require('../functions/functions');
-const {validUserInput,validTicketInput,validSearchInput,getInt} = require('../functions/validators');
+const {validUserInput,validTicketInput,validSearchInput,validateEmailAndPassword,getInt} = require('../functions/validators');
 
 
 router.get('/', (req, res, next)=> {
@@ -54,28 +54,32 @@ router.post('/register', (req, res)=> {
 router.post('/login', (req, res)=> {
     let email = req.body.email || "";
     let password = req.body.password || "";
-    pool.query('SELECT * FROM users WHERE email = $1', [email])
-        .then(data=>{
-           if(data.rowCount !== 1){
-               res.send('email not found');
-           } else{
-               if(bcrypt.compareSync(password, data.rows[0].password)){
-                   let token = generateToken(data.rows[0].id, "access");
-                   pool.query('UPDATE users SET token = $1 WHERE email = $2',[token,email])
-                       .then(data2=>{
-                           res.send({message:"successful login",token:token});
-                       },err=>{
-                           console.error(err);
-                           res.status(500).end();
-                       })
-               }else{
-                   res.send({message:'incorrect password'});
-               }
-           }
-        },err=>{
-            console.error(err);
-            res.status(500).end();
-        });
+    if(validateEmailAndPassword(email,password)){
+        pool.query('SELECT * FROM users WHERE email = $1', [email])
+            .then(data=>{
+                if(data.rowCount !== 1){
+                    res.send('email not found');
+                } else{
+                    if(bcrypt.compareSync(password, data.rows[0].password)){
+                        let token = generateToken(data.rows[0].id, "access");
+                        pool.query('UPDATE users SET token = $1 WHERE email = $2',[token,email])
+                            .then(data2=>{
+                                res.send({message:"successful login",token:token});
+                            },err=>{
+                                console.error(err);
+                                res.status(500).end();
+                            })
+                    }else{
+                        res.send({message:'incorrect password'});
+                    }
+                }
+            },err=>{
+                console.error(err);
+                res.status(500).end();
+            });
+    }else{
+        res.send({message:"invalid input"});
+    }
 });
 
 router.get('/me',authenticate, getUserData, (req,res)=>{
@@ -178,7 +182,18 @@ router.post('/ticket', authenticate, getUserData, (req,res)=>{
                                     .then(data3=>{
                                         //console.log(data3);
                                         if(parseInt(data3.rowCount) === 1){
-                                            res.send({message:"ticket reserved"});
+                                            pool.query('UPDATE cities SET popularity = popularity + 1 WHERE name = $1',[locations[ticketInfo.endIndex]])
+                                                .then(data4=>{
+                                                    if(parseInt(data4.rowCount)===1){
+                                                        res.send({message:"ticket reserved"});
+                                                    }else{
+                                                        res.send({message:"destination error prevented ticket reservation"});
+                                                    }
+                                                },err=>{
+                                                    console.error(err);
+                                                    res.status(500).end();
+                                                });
+                                            //res.send({message:"ticket reserved"});
                                         }else{
                                             res.send({message:"could not reserve ticket"});
                                         }
@@ -236,7 +251,7 @@ router.delete('/ticket/:id',authenticate,getUserData, (req,res)=>{
                                         },err=>{
                                             console.error(err);
                                             res.status(500).end();
-                                        })
+                                        });
                                 }else{
                                     res.send({message:"could not delete ticket"});
                                 }

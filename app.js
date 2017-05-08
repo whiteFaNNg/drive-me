@@ -9,6 +9,7 @@ const index = require('./routes/index');
 const users = require('./routes/users');
 const drivers = require('./routes/drivers');
 const tests = require('./routes/tests');
+const others = require('./routes/other');
 
 //var pool = require('./database/postgres');
 //db schema init
@@ -31,6 +32,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', index);
 app.use('/users', users);
 app.use('/drivers', drivers);
+app.use('/others',others);
 app.use('/tests',tests);
 
 // catch 404 and forward to error handler

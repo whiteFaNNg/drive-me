@@ -19,15 +19,16 @@ let sanitizeInput = (objectData)=>{
     );
 };
 
+let validateEmailAndPassword = (email,password)=>{
+    return validator.isEmail(email) && password.length>=6;
+};
+
 let validUserInput = (userInput)=>{
     sanitizeInput(userInput);
     if(userInput.name === "" || userInput.surname ==="" || userInput.email ==="" || userInput.password === ""||userInput.age===""){
         return false;
     }
-    if(!validator.isEmail(userInput.email)){
-        return false;
-    }
-    if(userInput.password.length<6){
+    if(!validator.isEmail(userInput.email) || userInput.password.length<6){
         return false;
     }
     userInput.age = validator.toInt(userInput.age);
@@ -92,4 +93,4 @@ let validSearchInput = (searchInput)=>{
     return true;
 };
 
-module.exports = {validUserInput,validTicketInput,validSearchInput, getInt};
+module.exports = {validUserInput,validTicketInput,validSearchInput, getInt,validateEmailAndPassword};
