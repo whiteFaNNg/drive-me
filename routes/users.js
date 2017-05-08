@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const authenticate = require('../middleware/authenticate');
 const getUserData = require('../middleware/user-info');
 const {generateToken,refineSearch,getStartTime,calculateRoute,calculatePrice} = require('../functions/functions');
-const {validUserInput,validTicketInput,getInt} = require('../functions/validators');
+const {validUserInput,validTicketInput,validSearchInput,getInt} = require('../functions/validators');
 
 
 router.get('/', (req, res, next)=> {
@@ -83,40 +83,47 @@ router.get('/me',authenticate, getUserData, (req,res)=>{
 });
 
 router.post('/find',authenticate,getUserData, (req,res)=>{
-   let startTimeRange = req.body.startTimeRange;
-   let priceRange = req.body.priceRange;
-   let destination = req.body.destination;
-   let preferences = {
-        pets : req.query.pets||false,
-        smoking: req.query.smoking||false,
-        music: req.query.music||false,
-        chatty: req.query.chatty||false
-   };
-   let matchLocationQuery = "%"+destination.from+"%"+destination.to+"%";
-   let refinedSearch = {primary:[],secondary:[]};
-   pool.query("SELECT trips.id, trips.route, trips.start_time, trips.end_time, drivers.name, drivers.surname, "+
-        "CAST(drivers.total_rating AS real)/drivers.total_votes AS rating, drivers.vehicle_gas, drivers.vehicle_seats "+
-        "FROM trips JOIN drivers ON trips.driver_id = drivers.id "+
-        "WHERE trips.start_time <= $1 AND trips.end_time > $1 AND trips.route LIKE $2 AND drivers.pets = $3 AND "+
-        "drivers.music = $4 and drivers.smoking = $5 and drivers.chatty = $6 "+
-        "ORDER BY rating DESC",
-        [startTimeRange.from,matchLocationQuery,preferences.pets,preferences.music,preferences.smoking,preferences.chatty])
-        .then(data=>{
-            // console.log(data);
-            if(parseInt(data.rowCount)>=1){
-                refineSearch(refinedSearch, data.rows,startTimeRange,priceRange,destination,refinedSearch)
-                    .then(data=>{
-                        res.send(data);
-                    },err=>{
-                        res.status(501).end();
-                    });
-            }else{
-                res.send({message:"no match"});
-            }
-        },err=>{
-            console.error(err);
-            res.code(500).end();
-        });
+    let searchInput = {};
+    searchInput.startTimeRange = req.body.startTimeRange;
+    searchInput.priceRange = req.body.priceRange;
+    searchInput.destination = req.body.destination;
+    searchInput.preferences = {
+        pets : req.query.pets||"false",
+        smoking: req.query.smoking||"false",
+        music: req.query.music||"false",
+        chatty: req.query.chatty||"false"
+    };
+    if(validSearchInput(searchInput)){
+        let matchLocationQuery = "%"+searchInput.destination.from+"%"+searchInput.destination.to+"%";
+        let refinedSearch = {primary:[],secondary:[]};
+        pool.query("SELECT trips.id, trips.route, trips.start_time, trips.end_time, drivers.name, drivers.surname, "+
+            "CAST(drivers.total_rating AS real)/drivers.total_votes AS rating, drivers.vehicle_gas, drivers.vehicle_seats "+
+            "FROM trips JOIN drivers ON trips.driver_id = drivers.id "+
+            "WHERE trips.start_time <= $1 AND trips.end_time > $1 AND trips.route LIKE $2 AND drivers.pets = $3 AND "+
+            "drivers.music = $4 and drivers.smoking = $5 and drivers.chatty = $6 "+
+            "ORDER BY rating DESC",
+            [searchInput.startTimeRange.from,matchLocationQuery,searchInput.preferences.pets,
+                searchInput.preferences.music,searchInput.preferences.smoking,searchInput.preferences.chatty])
+            .then(data=>{
+                // console.log(data);
+                if(parseInt(data.rowCount)>=1){
+                    refineSearch(refinedSearch, data.rows,searchInput.startTimeRange,searchInput.priceRange,searchInput.destination,refinedSearch)
+                        .then(data=>{
+                            res.send(data);
+                        },err=>{
+                            console.error(err);
+                            res.status(501).end();
+                        });
+                }else{
+                    res.send({message:"no match"});
+                }
+            },err=>{
+                console.error(err);
+                res.code(500).end();
+            });
+    }else{
+        res.send({message:"invalid input"});
+    }
 });
 
 router.post('/ticket', authenticate, getUserData, (req,res)=>{

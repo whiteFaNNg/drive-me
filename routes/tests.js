@@ -4,7 +4,7 @@
 const express = require('express');
 const router = express.Router();
 const validator = require('validator');
-const {validUserInput,validTicketInput} = require('../functions/validators');
+const {validUserInput,validTicketInput,validSearchInput} = require('../functions/validators');
 
 router.get('/', (req, res, next)=> {
     res.render('index', { title: 'Express' });
@@ -32,12 +32,25 @@ router.post('/ticket-input',(req,res)=>{
         startIndex: req.body.startIndex || "",
         endIndex: req.body.endIndex || ""
     };
-    // console.log(typeof ticketInfo.startIndex);
     if(validTicketInput(ticketInfo)){
         res.send("OK");
     }else{
         res.send("ERROR");
     }
+});
+
+router.post('/ticket-search',(req,res)=>{
+    let searchInput = {};
+    searchInput.startTimeRange = req.body.startTimeRange;
+    searchInput.priceRange = req.body.priceRange;
+    searchInput.destination = req.body.destination;
+    searchInput.preferences = {
+        pets : req.query.pets||"false",
+        smoking: req.query.smoking||"false",
+        music: req.query.music||"false",
+        chatty: req.query.chatty||"false"
+    };
+    res.send({valid: validSearchInput(searchInput),searchInput});
 });
 
 module.exports = router;
