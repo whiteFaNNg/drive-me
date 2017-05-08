@@ -26,4 +26,34 @@ router.get('/age-history', (req,res)=>{
        })
 });
 
+router.get('/popular-drivers', (req,res)=>{
+    pool.query('SELECT name, surname, email, total_passengers FROM drivers ORDER BY total_passengers DESC LIMIT 10')
+       .then(data=>{
+           res.send(data.rows);
+       },err=>{
+           console.error(err);
+           res.status(500).end();
+       })
+});
+
+router.get('/best-rated-drivers', (req,res)=>{
+    pool.query('SELECT name, surname, email, CAST(total_rating AS real)/total_votes AS rating FROM drivers '+
+        'WHERE total_votes != 0 ORDER BY rating DESC LIMIT 10')
+        .then(data=>{
+            res.send(data.rows);
+        },err=>{
+            res.status(500).end();
+        });
+});
+
+router.get('/most-experienced-drivers', (req,res)=>{
+    pool.query('SELECT name, surname, email, total_km FROM drivers ORDER BY total_km DESC LIMIT 10')
+        .then(data=>{
+            res.send(data.rows);
+        },err=>{
+            console.error(err);
+            res.status(500).end();
+        })
+});
+
 module.exports = router;

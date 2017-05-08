@@ -85,7 +85,7 @@ let initDrivers = ()=>{
         'password varchar not null, '+
         'token varchar, '+
         'driver_license varchar not null, '+
-        'phone_number varchar, '+
+        'phone_number varchar not null, '+
         'age int not null, '+
         'short_info text, '+
         'vehicle_type varchar not null, '+
@@ -98,8 +98,8 @@ let initDrivers = ()=>{
         'chatty boolean not null default false, '+
         'total_km int not null default 0, '+
         'total_passengers int not null default 0, '+
-        'total_rating int not null default 0, '+
-        'total_votes int not null default 0 )')
+        'total_rating int not null default 3, '+
+        'total_votes int not null default 1 )')
         .then(data=>{
             console.log('table >drivers< created')
         },err=>{
@@ -219,7 +219,8 @@ let initTickets = ()=>{
         'end_position int not null, '+
         'start_time int not null, '+
         'trip_id int not null, '+
-        'user_id int not null)')
+        'user_id int not null, ' +
+        'rated boolean not null default false)')
         .then(data=>{
             console.log('table >tickets< created');
         },err=>{

@@ -137,7 +137,7 @@ router.post('/ticket', authenticate, getUserData, (req,res)=>{
         endIndex: req.body.endIndex || ""
     };
     if(validTicketInput(ticketInfo)){
-        pool.query("SELECT trips.id, trips.route, trips.start_time, drivers.vehicle_seats "+
+        pool.query("SELECT trips.id, trips.route, trips.start_time, drivers.vehicle_seats, drivers.id as driver_id "+
             "FROM trips JOIN drivers ON trips.driver_id = drivers.id "+
             "WHERE trips.id = $1",[ticketInfo.tripId])
             .then(data=>{
@@ -185,7 +185,29 @@ router.post('/ticket', authenticate, getUserData, (req,res)=>{
                                             pool.query('UPDATE cities SET popularity = popularity + 1 WHERE name = $1',[locations[ticketInfo.endIndex]])
                                                 .then(data4=>{
                                                     if(parseInt(data4.rowCount)===1){
-                                                        res.send({message:"ticket reserved"});
+                                                        //res.send({message:"ticket reserved"});
+                                                        pool.query('UPDATE age_history SET total = total + 1 WHERE id=$1',[req.user.age])
+                                                            .then(data5=>{
+                                                                if(parseInt(data5.rowCount)!==0){
+                                                                    pool.query('UPDATE drivers SET total_passengers=total_passengers+1 '+
+                                                                    'WHERE id=$1',[data.rows[0].driver_id])
+                                                                        .then(data6=>{
+                                                                            if(parseInt(data6.rowCount)!==1){
+                                                                                res.status(400).end();
+                                                                            }else{
+                                                                                res.send({message:"ticket reserved"});
+                                                                            }
+                                                                        },err=>{
+                                                                            console.error(err);
+                                                                            res.status(500).end();
+                                                                        });
+                                                                }else{
+                                                                    res.send({message:"history table error prevented ticket reservation"});
+                                                                }
+                                                            },err=>{
+                                                                console.error(err);
+                                                                res.status(500).end();
+                                                            });
                                                     }else{
                                                         res.send({message:"destination error prevented ticket reservation"});
                                                     }
@@ -193,7 +215,6 @@ router.post('/ticket', authenticate, getUserData, (req,res)=>{
                                                     console.error(err);
                                                     res.status(500).end();
                                                 });
-                                            //res.send({message:"ticket reserved"});
                                         }else{
                                             res.send({message:"could not reserve ticket"});
                                         }
@@ -244,7 +265,31 @@ router.delete('/ticket/:id',authenticate,getUserData, (req,res)=>{
                                     pool.query('UPDATE cities SET popularity = popularity - 1 WHERE name = $1',[data.rows[0].end_location])
                                         .then(data3=>{
                                             if(parseInt(data3.rowCount)===1){
-                                                res.send({message:"ticket deleted"});
+                                                pool.query('UPDATE age_history SET total = total - 1 WHERE id=$1',[req.user.age])
+                                                    .then(data4=>{
+                                                        if(parseInt(data4.rowCount!==1)){
+                                                            res.status(400).end();
+                                                        }else{
+                                                            pool.query('update drivers set total_passengers = total_passengers - 1 '+
+                                                                'where drivers.id = '+
+                                                                '(select (drivers.id) as driver_id from tickets '+
+                                                                'join trips on tickets.trip_id = trips.id join drivers on trips.driver_id = drivers.id '+
+                                                                'where tickets.id = $1)',[ticketId])
+                                                                .then(data5=>{
+                                                                    if(parseInt(data5.rowCount!==1)){
+                                                                        res.status(400).end();
+                                                                    }else{
+                                                                        res.send({message:"ticket deleted"});
+                                                                    }
+                                                                },err=>{
+                                                                    console.error(err);
+                                                                    res.status(500).end();
+                                                                });
+                                                        }
+                                                    },err=>{
+                                                        console.error(err);
+                                                        res.status(500).end();
+                                                    });
                                             }else{
                                                 res.send({message:"destination error prevented ticket deletion"});
                                             }
