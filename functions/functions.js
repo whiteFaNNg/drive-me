@@ -1,6 +1,3 @@
-/**
- * Created by Kliment on 5/1/2017.
- */
 const pool = require('../database/postgres');
 const jwt = require('jsonwebtoken');
 const secret = require('../config/jwt.json');
@@ -31,7 +28,6 @@ let verifyRoute = (trip_route)=>{
 
 let getStartTime = (locations, startTime, endIndex)=>{
     let temp = 0;
-    // console.log("Start time -> "+startTime+", endIndex -> "+endIndex);
     for(let i = 0; i<endIndex; i++){
         temp+=connMap.get(locations[i]).get(locations[i+1])[0];
     }
@@ -51,7 +47,6 @@ let constructRefinedSearch = (row, refinedSearch, locations, startTimeRange, pri
             }
         }
         if(!isTaken){
-            // console.log(row);
             let startingTime = getStartTime(locations,row.start_time,subRoutes[i].begin);
             let obj = Object.assign({id:row.id, at:startingTime, price: gasConsumption/100*subRoutes[i].distance*90}, subRoutes[i]);
             if((obj.price>priceRange.from) && (obj.price<priceRange.to) && (obj.at>startTimeRange.from) && (obj.at<startTimeRange.to)){
@@ -96,7 +91,17 @@ let getSubroutes = (locations,destination)=> {
 let calculateRoute = (locations,startIndex,endIndex,option)=>{
     let total = 0;
     for(let i = startIndex;i<endIndex;i++){
-        total += connMap.get(locations[i]).get(locations[i+1])[option];
+        let temp = connMap.get(locations[i]);
+        if(temp === undefined){
+            return 0;
+        }else{
+            temp = temp.get(locations[i+1]);
+            if(temp === undefined){
+                return 0;
+            }else{
+                total+=temp[option];
+            }
+        }
     }
     return total;
 };
@@ -114,7 +119,6 @@ let refineSearch = (refinedSearch,rows,startTimeRange,priceRange,destination)=>{
                 clearInterval(myInterval);
                 resolve(refinedSearch);
             }else{
-
                 currTime+=10;
                 if(currTime>=maxTime || foundError){
                     clearInterval(myInterval);

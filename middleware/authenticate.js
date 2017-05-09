@@ -1,6 +1,3 @@
-/**
- * Created by Kliment on 5/1/2017.
- */
 const pool = require('../database/postgres');
 const secret = require('../config/jwt.json');
 const jwt = require('jsonwebtoken');

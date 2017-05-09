@@ -9,7 +9,7 @@ const index = require('./routes/index');
 const users = require('./routes/users');
 const drivers = require('./routes/drivers');
 const tests = require('./routes/tests');
-const others = require('./routes/other');
+const others = require('./routes/others');
 
 //var pool = require('./database/postgres');
 //db schema init

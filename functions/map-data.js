@@ -1,6 +1,3 @@
-/**
- * Created by Kliment on 5/2/2017.
- */
 const pool = require('../database/postgres');
 
 let cities = [];

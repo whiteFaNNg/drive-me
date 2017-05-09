@@ -2,6 +2,7 @@
  * Created by Kliment on 5/5/2017.
  */
 const validator = require('validator');
+const {calculateRoute} = require('./functions');
 
 let getInt = (input)=>{
     return validator.toInt(input);
@@ -19,16 +20,25 @@ let sanitizeInput = (objectData)=>{
     );
 };
 
-let validateEmailAndPassword = (email,password)=>{
+let validEmailAndPassword = (email,password)=>{
     return validator.isEmail(email) && password.length>=6;
+};
+
+let validRequiredFields = (objectData)=>{
+    let isValid = true;
+    Object.entries(objectData).forEach(
+        ([key, value]) => {
+            if(value === ""){
+                isValid = false;
+            }
+        }
+    );
+    return isValid;
 };
 
 let validUserInput = (userInput)=>{
     sanitizeInput(userInput);
-    if(userInput.name === "" || userInput.surname ==="" || userInput.email ==="" || userInput.password === ""||userInput.age===""){
-        return false;
-    }
-    if(!validator.isEmail(userInput.email) || userInput.password.length<6){
+    if(!validRequiredFields(userInput) || !validEmailAndPassword(userInput.email, userInput.password)){
         return false;
     }
     userInput.age = validator.toInt(userInput.age);
@@ -67,7 +77,6 @@ let validSearchInput = (searchInput)=>{
     if(!isValidObject(searchInput.destination)||!isValidObject(searchInput.priceRange)||!isValidObject(searchInput.startTimeRange)){
         return false;
     }
-
     searchInput.destination.from = sanitize(searchInput.destination.from || "");
     searchInput.destination.to = sanitize(searchInput.destination.to || "");
     searchInput.startTimeRange.from = getInt(sanitize(searchInput.startTimeRange.from || ""));
@@ -97,4 +106,53 @@ let validRating = (rating)=>{
     return !isNaN(rating) && rating>0 && rating<6;
 };
 
-module.exports = {validUserInput,validTicketInput,validSearchInput, getInt,validateEmailAndPassword,validRating};
+let validDriverInput = (driverInput)=>{
+    sanitizeInput(driverInput);
+    if(!validRequiredFields(driverInput) || !validEmailAndPassword(driverInput.email, driverInput.password)){
+        return false;
+    }
+    driverInput.age = validator.toInt(driverInput.age);
+    driverInput.vehicleSeats = validator.toInt(driverInput.vehicleSeats);
+    driverInput.vehicleYear = validator.toInt(driverInput.vehicleYear);
+    driverInput.vehicleGas = validator.toFloat(driverInput.vehicleGas);
+
+    if(isNaN(driverInput.age) || isNaN(driverInput.vehicleSeats) || isNaN(driverInput.vehicleYear) || isNaN(driverInput.vehicleGas)){
+        return false;
+    }else if(driverInput.age<1 || driverInput.age>150){
+        return false;
+    }
+    return true;
+};
+
+let validTripInput = (tripInput)=>{
+    let currentTime = new Date().getTime()/60000;
+    sanitizeInput(tripInput);
+
+    if(!validRequiredFields(tripInput)){
+        return false;
+    }
+
+    tripInput.id = validator.toInt(tripInput.id);
+    tripInput.startTime = validator.toInt(tripInput.startTime);
+    if(isNaN(tripInput.id) || isNaN(tripInput.startTime)){
+        return false;
+    }
+
+    if(tripInput.startTime<currentTime){
+        return false;
+    }
+
+    tripInput.locations = tripInput.tripRoute.split('-');
+    if(tripInput.locations.length<2){
+        return false;
+    }
+
+    tripInput.endTime = tripInput.startTime + calculateRoute(tripInput.locations,0,tripInput.locations.length-1,1);
+
+    if(tripInput.startTime === tripInput.endTime){
+        return false;
+    }
+    return true;
+};
+
+module.exports = {validUserInput,validTicketInput,validSearchInput, getInt,validEmailAndPassword,validRating,validDriverInput,validTripInput};

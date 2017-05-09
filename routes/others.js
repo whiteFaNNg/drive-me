@@ -53,7 +53,7 @@ router.get('/most-experienced-drivers', (req,res)=>{
         },err=>{
             console.error(err);
             res.status(500).end();
-        })
+        });
 });
 
 module.exports = router;

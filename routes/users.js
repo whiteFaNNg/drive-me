@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const authenticate = require('../middleware/authenticate');
 const getUserData = require('../middleware/user-info');
 const {generateToken,refineSearch,getStartTime,calculateRoute,calculatePrice} = require('../functions/functions');
-const {validUserInput,validTicketInput,validSearchInput,validateEmailAndPassword,validRating,getInt} = require('../functions/validators');
+const {validUserInput,validTicketInput,validSearchInput,validEmailAndPassword,validRating,getInt} = require('../functions/validators');
 
 
 router.get('/', (req, res, next)=> {
@@ -54,7 +54,7 @@ router.post('/register', (req, res)=> {
 router.post('/login', (req, res)=> {
     let email = req.body.email || "";
     let password = req.body.password || "";
-    if(validateEmailAndPassword(email,password)){
+    if(validEmailAndPassword(email,password)){
         pool.query('SELECT * FROM users WHERE email = $1', [email])
             .then(data=>{
                 if(data.rowCount !== 1){

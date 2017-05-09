@@ -1,6 +1,3 @@
-/**
- * Created by Kliment on 4/29/2017.
- */
 const pool = require('./postgres');
 const {initMapData} = require('../functions/map-data');
 
@@ -10,7 +7,7 @@ let initSchema = ()=>{
     initConnections();
     initDrivers();
     initAgeHistory();
-//    initPreferences();
+//  initPreferences();
     initTrips();
     initTickets();
 };
@@ -87,7 +84,7 @@ let initDrivers = ()=>{
         'driver_license varchar not null, '+
         'phone_number varchar not null, '+
         'age int not null, '+
-        'short_info text, '+
+        'short_info text not null, '+
         'vehicle_type varchar not null, '+
         'vehicle_seats int not null, '+
         'vehicle_year int not null, '+
