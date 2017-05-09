@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const authenticate = require('../middleware/authenticate');
 const getDriverData = require('../middleware/driver-info');
 const {generateToken,calculateRoute} = require('../functions/functions');
-const {validEmailAndPassword,validDriverInput,validTripInput} = require('../functions/validators');
+const {validEmailAndPassword,validDriverInput,validTripInput,getInt} = require('../functions/validators');
 
 router.get('/', (req, res)=> {
     res.send('respond with a resource');
@@ -129,6 +129,80 @@ router.post('/trip',authenticate,getDriverData, (req, res)=>{
     }else{
         res.send({message:"invalid input"});
     }
+});
+
+router.get('/trip',authenticate,getDriverData,(req,res)=>{
+    pool.query('SELECT * FROM trips WHERE driver_id = $1',[req.user.id])
+        .then(data=>{
+            if(parseInt(data.rowCount)===0){
+                res.send({message: "you do not have any trips"})
+            }else{
+                res.send(data.rows);
+            }
+        },err=>{
+            console.error(err);
+            res.status(500).end();
+        });
+});
+
+router.get('/trip/:id',authenticate,getDriverData,(req,res)=>{
+    let tripId = getInt(req.params.id || "");
+    pool.query('SELECT * FROM trips WHERE driver_id = $1 AND id = $2',[req.user.id,tripId])
+        .then(data=>{
+            if(parseInt(data.rowCount)!==1){
+                res.status(400).end();
+            }else{
+                pool.query('SELECT count(*) FROM tickets WHERE trip_id = $1',[tripId])
+                    .then(data2=>{
+                        if(parseInt(data2.rowCount)!==1){
+                            res.status(500).end();
+                        }else{
+                            data.rows[0].passengers = data2.rows[0].count;
+                            res.send(data.rows[0]);
+                        }
+                    },err=>{
+                       console.error(err);
+                       res.status(500).end();
+                    });
+            }
+        },err=>{
+            console.error(err);
+            res.status(500).end();
+        });
+});
+
+router.delete('/trip/:id',authenticate,getDriverData,(req,res)=>{
+    let tripId = getInt(req.params.id || "");
+    pool.connect()
+        .then(client => {
+            client.query('BEGIN;')
+                .then(data => {
+                    client.query('DELETE FROM trips WHERE driver_id = $1 AND id = $2',[req.user.id,tripId])
+                        .then(data2=>{
+                            client.query('DELETE FROM tickets WHERE trip_id = $1',[tripId])
+                                .then(data4=>{
+                                    client.query('COMMIT;')
+                                        .then(data5=>{
+                                            client.release();
+                                            res.send({message:"trip successfully deleted"});
+                                        });
+                                })
+                        }).catch(err=>{
+                            client.query('ROLLBACK;')
+                                .then(data3=>{
+                                    throw err;
+                                },err=>{
+                                    throw err;
+                                });
+                        })
+                }).catch(err=>{
+                    client.release();
+                    res.status(500).end();
+            })
+        },err=>{
+            console.error(err);
+            res.status(500).end();
+        });
 });
 
 module.exports = router;
