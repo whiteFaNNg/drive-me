@@ -3,11 +3,10 @@
 Simple app that offers passengers to find drivers for travel between cities in Macedonia (21 cities)
 So far only the api is done (no frontend) => _nodejs + postgresql_
 
+***
 
 ### Driver Routes:
 _POST_:  ___"/drivers/register"___ => driver registration
-
-required fields:
 
 (body-json) 
 
@@ -24,8 +23,6 @@ required fields:
     
 _POST_: ___"/drivers/login"___ => driver login
 
-required fields
-
 (body-json)  
 
     "email":"driver@driver.com",
@@ -33,15 +30,11 @@ required fields
 
 _GET_: ___"/drivers/me"___ => get my info (driver)
 
-required fields
-
 (headers)   
 
     "x-auth":jwt-token
 
 _POST_: ___"/drivers/trip"___ => add new trip
-
-required fields
 
 (headers)   
 
@@ -55,8 +48,6 @@ required fields
 ### User Routes:
 _POST_: ___"/users/register"___ => user registration
 
-required fields
-
 (body-json) 
 
     "name":"user",
@@ -67,8 +58,6 @@ required fields
 
 _POST_: ___"/users/login"___ => user login
 
-required fields
-
 (body-json) 
 
     "email":"test@test.com",
@@ -76,15 +65,15 @@ required fields
 
 _GET_: ___"/users/me"___ => get my info (user)
 
-required fields:
-
 (headers)
 
     "x-auth":jwt-token
     
 _POST_: ___"/users/find"___ => find trips/routes
 
-required fields:
+(headers)
+
+    "x-auth":jwt-token
 
 (body-json)
 
@@ -101,13 +90,7 @@ required fields:
     		"to":"resen"
     	}
     	
-(headers)
-
-    "x-auth":jwt-token
-    
 _POST_: ___"/users/ticket"___ => reserve new ticket
-
-required fields
 
 (headers)
 
@@ -163,3 +146,5 @@ _GET_: ___"/others/most-experienced-drivers"___ => get most experienced drivers 
 
 ### test routes: (for debugging purposes)
 
+***
+_complete schema can be found under "./database/db-setup.js"_

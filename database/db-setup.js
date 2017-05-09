@@ -199,7 +199,8 @@ let initTrips = ()=>{
         'route varchar not null, '+
         'driver_id int not null, '+
         'start_time int not null, '+
-        'end_time int not null)')
+        'end_time int not null, '+
+        'finished boolean not null default false)')
         .then(data=>{
             console.log('table >trips< created');
         },err=>{
