@@ -105,7 +105,61 @@ required fields:
 
     "x-auth":jwt-token
     
+_POST_: ___"/users/ticket"___ => reserve new ticket
 
-### other routes:
+required fields
+
+(headers)
+
+    "x-auth":jwt-token
+    
+(body-json)
+
+    	"tripId":"1",
+    	"startIndex":"1",
+    	"endIndex":"2"
+    	
+_GET_: ___"/users/ticket"___ => retrieve my tickets
+
+(headers)
+
+    "x-auth":jwt-token
+    	
+_GET_: ___"/users/ticket/:id"___ => retrieve ticket with the specified id
+
+(headers)
+
+    "x-auth":jwt-token
+    
+_DELETE_: ___"/users/ticket/:id"___ => delete ticket with the specified id
+
+(headers)
+
+    "x-auth":jwt-token
+    
+_POST_: ___"/users/ticket/rate/:id"___ => rate ticket(driver) with the specified id
+
+(headers)
+
+    "x-auth":jwt-token
+    
+(body-json)
+
+    "rating":"4" (>=1 && <=5)
+    
+
+
+### Other Routes:
+
+_GET_: ___"/others/destinations"___ => get top 10 popular destinations
+
+_GET_: ___"/others/age-history"___ => get most travelled age
+
+_GET_: ___"/others/popular-drivers"___ => get most popular drivers by number of passengers transported 
+
+_GET_: ___"/others/best-rated-drivers"___ => get top rated drivers
+
+_GET_: ___"/others/most-experienced-drivers"___ => get most experienced drivers by total distance travelled
 
 ### test routes: (for debugging purposes)
+
